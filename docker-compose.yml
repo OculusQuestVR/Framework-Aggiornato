@@ -1,0 +1,97 @@
+version: "3.4"
+services:
+  config-server:
+    image: mpg-config-server
+    container_name: config-server
+    ports:
+      - 8888:8888
+    build:
+      context: config-server
+      dockerfile: Dockerfile
+    networks:
+      - mpg-network
+
+  discovery-service:
+    image: mpg-discovery-service
+    #    network_mode: host
+    container_name: discovery-service
+    ports:
+      - 8081:8081
+    build:
+      context: discovery-service
+      dockerfile: Dockerfile
+    depends_on:
+      - config-server
+    networks:
+      - mpg-network
+
+  gateway-service:
+    image: mpg-gateway-service
+    #    network_mode: host
+    container_name: gateway-service
+    ports:
+      - 8080:8080
+    build:
+      context: gateway-server
+      dockerfile: Dockerfile
+    depends_on:
+      - config-server
+      - discovery-service
+    networks:
+      - mpg-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  employee-service:
+    image: mpg-employee-service
+    #    network_mode: host
+    container_name: employee-service
+    ports:
+      - 8082:8082
+    build:
+      context: employee-service
+      dockerfile: Dockerfile
+    depends_on:
+      - config-server
+      - discovery-service
+    networks:
+      - mpg-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  integration-service:
+    image: mpg-integration-service
+    #    network_mode: host
+    container_name: integration-service
+    ports:
+      - 8083:8083
+    build:
+      context: integration-service
+      dockerfile: Dockerfile
+    depends_on:
+      - config-server
+      - discovery-service
+    networks:
+      - mpg-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  mock-payment-service:
+    image: mpg-mock-payment-service
+    #    network_mode: host
+    container_name: mock-payment-service
+    ports:
+      - 8084:8084
+    build:
+      context: mock-payment-service
+      dockerfile: Dockerfile
+    depends_on:
+      - config-server
+      - discovery-service
+    networks:
+      - mpg-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  mpg-network: {}
